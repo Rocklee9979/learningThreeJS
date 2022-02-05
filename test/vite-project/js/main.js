@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import * as dat from 'dat.gui';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { Raycaster } from 'three';
 
 const gui = new dat.GUI();
 const world = {
@@ -45,6 +46,7 @@ function generetePlane() {
     }
 }
 
+const raycastser = new THREE.Raycaster();
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 camera.position.z = 5;
@@ -90,10 +92,26 @@ backlight.position.set(0, 0, -1);
 scene.add(backlight);
 
 
+
+const mouse = {
+    x: undefined, 
+    y: undefined
+}
+
+addEventListener('mousemove', (event) => {
+    mouse.x = (event.clientX / innerWidth)*2 -1;
+    mouse.y = -(event.clientY / innerHeight)*2 +1;
+})
+
 function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
-    // planeMesh.rotation.x += 0.01;
+    raycastser.setFromCamera(mouse, camera);
+    const intersects = raycastser.intersectObject(planeMesh);
+    
+    if (intersects.length > 0) {
+        console.log('intersecting');
+    }
    
 };
 
