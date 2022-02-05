@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { GreaterStencilFunc } from 'three';
 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -23,6 +22,9 @@ points.push(new THREE.Vector3(10, 0, 0));
 const geometry = new THREE.BufferGeometry().setFromPoints(points);
 
 const line = new THREE.Line(geometry, material);
+
+const parameters = "TESTIG";
+
 
 scene.add(line);
 renderer.render(scene, camera);
