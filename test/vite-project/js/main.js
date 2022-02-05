@@ -62,9 +62,9 @@ const control = new OrbitControls(camera, renderer.domElement);
 
 const planeGeometry = new THREE.PlaneGeometry(10, 10, 10, 10);
 const planeMaterial = new THREE.MeshPhongMaterial({
-    color: 0xff0000,
     side: THREE.DoubleSide,
-    flatShading: THREE.FlatShading
+    flatShading: THREE.FlatShading,
+    vertexColors: true
 });
 
 const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
@@ -80,6 +80,17 @@ for (let i = 0; i < array.length; i += 3){
 
     array[i + 2] = z + Math.random();
 }
+
+const colors = [];
+for (let i = 0; i < planeMesh.geometry.attributes.position.count; i++){
+    colors.push(0, 0, 1);
+}
+
+planeMesh.geometry.setAttribute(
+    'color',
+    new THREE.BufferAttribute(new Float32Array(colors),3)
+);
+
 
 
 
@@ -110,7 +121,11 @@ function animate() {
     const intersects = raycastser.intersectObject(planeMesh);
     
     if (intersects.length > 0) {
-        console.log('intersecting');
+        const { color } = intersects[0].object.geometry.attributes;
+
+        color.setX(intersects[0].face.a, 0);
+        color.setX(intersects[0].face.b, 0);
+        color.setX(intersects[0].face.c, 0);
     }
    
 };
