@@ -6,22 +6,22 @@ import gsap from 'gsap';
 const gui = new dat.GUI();
 const world = {
     plane: {
-        width: 19,
-        height: 19,
-        widthSegments: 25, 
-        heightSegments: 25,
+        width: 400,
+        height: 400,
+        widthSegments: 50, 
+        heightSegments: 50,
     }
 };
-gui.add(world.plane, 'height', 1, 50).onChange(() => {
+gui.add(world.plane, 'height', 1, 1000).onChange(() => {
     generetePlane();
 });
-gui.add(world.plane, 'width', 1, 50).onChange(() => {
+gui.add(world.plane, 'width', 1, 1000).onChange(() => {
     generetePlane();
 });
-gui.add(world.plane, 'widthSegments', 1, 50).onChange(() => {
+gui.add(world.plane, 'widthSegments', 1, 200).onChange(() => {
     generetePlane();
 });
-gui.add(world.plane, 'heightSegments', 1, 50).onChange(() => {
+gui.add(world.plane, 'heightSegments', 1, 200).onChange(() => {
     generetePlane();
 });
 
@@ -33,6 +33,8 @@ function generetePlane() {
         world.plane.widthSegments,
         world.plane.heightSegments
     );
+
+    
     
     let array = [];
     array = planeMesh.geometry.attributes.position.array;
@@ -61,7 +63,7 @@ function generetePlane() {
 const raycastser = new THREE.Raycaster();
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.z = 5;
+camera.position.z = 50;
 
 
 
@@ -72,7 +74,7 @@ document.body.appendChild(renderer.domElement);
 
 const control = new OrbitControls(camera, renderer.domElement);
 
-const planeGeometry = new THREE.PlaneGeometry(19, 19, 25, 25);
+const planeGeometry = new THREE.PlaneGeometry(400, 400, 50, 50);
 const planeMaterial = new THREE.MeshPhongMaterial({
     side: THREE.DoubleSide,
     flatShading: THREE.FlatShading,
@@ -82,18 +84,33 @@ const planeMaterial = new THREE.MeshPhongMaterial({
 const planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
 scene.add(planeMesh);
 
+//vertice position randomisation
 let array = [];
 array = planeMesh.geometry.attributes.position.array;
+const randomValues = [];
+for (let i = 0; i < array.length; i++){
 
-for (let i = 0; i < array.length; i += 3){
-    const x = array[i];
-    const y = array[i + 1];
-    const z = array[i + 2];
+    if (i % 3 === 0) {
+        const x = array[i];
+        const y = array[i + 1];
+        const z = array[i + 2];
+    
+        array[i] = x + (Math.random() - 0.5)*3;
+        array[i + 1] = y + (Math.random() - 0.5)*3;
+        array[i + 2] = z + (Math.random()-0.5)*3;
+    }
 
-    array[i + 2] = z + Math.random();
+    randomValues.push(Math.random()-0.5);
 }
 
 
+planeMesh.geometry.attributes.position.originalPosition =
+    planeMesh.geometry.attributes.position.array;
+
+planeMesh.geometry.attributes.position.randomValues = randomValues;
+
+
+//color attribute addition
 const colors = [];
 for (let i = 0; i < planeMesh.geometry.attributes.position.count; i++){
     colors.push(0, 0.19, 0.4);
@@ -112,7 +129,7 @@ planeMesh.geometry.setAttribute(
 
 
 const light = new THREE.DirectionalLight(0xffffff, 1);
-light.position.set(0, 0, 1);
+light.position.set(0, 1, 1);
 scene.add(light);
 
 const backlight = new THREE.DirectionalLight(0xffffff, 1);
@@ -131,9 +148,30 @@ addEventListener('mousemove', (event) => {
     mouse.y = -(event.clientY / innerHeight) * 2 + 1;
 })
 
+let frame = 0;
 function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
+    frame += 0.01;
+
+    const { array, originalPosition, randomValues } = planeMesh.geometry.attributes.position
+    for (let i = 0; i < array.length; i += 3){
+        
+        //x
+        array[i] = originalPosition[i] +
+            Math.cos(frame + randomValues[i]) * 0.01;
+        
+        //y
+        array[i+1] = originalPosition[i+1] +
+            Math.sin(frame + randomValues[i+1]) * 0.01;
+
+        
+        
+    }
+
+    planeMesh.geometry.attributes.position.needsUpdate = true; 
+
+
 
     raycastser.setFromCamera(mouse, camera);
     const intersects = raycastser.intersectObject(planeMesh);
