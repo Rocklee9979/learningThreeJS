@@ -1,21 +1,21 @@
 import * as THREE from 'three';
 import * as dat from 'dat.gui';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-
+import gsap from 'gsap';
 
 const gui = new dat.GUI();
 const world = {
     plane: {
-        width: 10,
-        height: 10,
-        widthSegments: 10, 
-        heightSegments: 10,
+        width: 19,
+        height: 19,
+        widthSegments: 25, 
+        heightSegments: 25,
     }
 };
 gui.add(world.plane, 'height', 1, 50).onChange(() => {
     generetePlane();
 });
-gui.add(world.plane, 'width', 1, 20).onChange(() => {
+gui.add(world.plane, 'width', 1, 50).onChange(() => {
     generetePlane();
 });
 gui.add(world.plane, 'widthSegments', 1, 50).onChange(() => {
@@ -44,6 +44,18 @@ function generetePlane() {
     
         array[i + 2] = z + Math.random();
     }
+
+    const colors = [];
+    for (let i = 0; i < planeMesh.geometry.attributes.position.count; i++){
+        colors.push(0, 0.19, 0.4);
+    }
+
+
+
+    planeMesh.geometry.setAttribute(
+        'color',
+        new THREE.BufferAttribute(new Float32Array(colors), 3)
+    );
 }
 
 const raycastser = new THREE.Raycaster();
@@ -60,7 +72,7 @@ document.body.appendChild(renderer.domElement);
 
 const control = new OrbitControls(camera, renderer.domElement);
 
-const planeGeometry = new THREE.PlaneGeometry(10, 10, 10, 10);
+const planeGeometry = new THREE.PlaneGeometry(19, 19, 25, 25);
 const planeMaterial = new THREE.MeshPhongMaterial({
     side: THREE.DoubleSide,
     flatShading: THREE.FlatShading,
@@ -84,17 +96,16 @@ for (let i = 0; i < array.length; i += 3){
 
 const colors = [];
 for (let i = 0; i < planeMesh.geometry.attributes.position.count; i++){
-    colors.push(1, 0, 0);
+    colors.push(0, 0.19, 0.4);
 }
 
-console.log(colors);
+
 
 planeMesh.geometry.setAttribute(
     'color',
     new THREE.BufferAttribute(new Float32Array(colors), 3)
 );
 
-// console.log(planeMesh.geometry.attributes);
 
 
 
@@ -131,21 +142,57 @@ function animate() {
         const { color } = intersects[0].object.geometry.attributes;
         
         //vertice 1
-        color.setX(intersects[0].face.a, 0);
-        color.setY(intersects[0].face.a, 0);
+        color.setX(intersects[0].face.a, 0.1);
+        color.setY(intersects[0].face.a, 0.5);
         color.setZ(intersects[0].face.a, 1);
 
         //vertice 2
-        color.setX(intersects[0].face.b, 0);
-        color.setY(intersects[0].face.b, 0);
+        color.setX(intersects[0].face.b, 0.1);
+        color.setY(intersects[0].face.b, 0.5);
         color.setZ(intersects[0].face.b, 1);
 
         //vertice 3
-        color.setX(intersects[0].face.c, 0);
-        color.setY(intersects[0].face.c, 0);
+        color.setX(intersects[0].face.c, 0.1);
+        color.setY(intersects[0].face.c, 0.5);
         color.setZ(intersects[0].face.c, 1);
 
         color.needsUpdate = true;
+
+        const initialColor = {
+            r: 0,
+            g: .19,
+            b: .4
+        };
+
+        const hoverColor = {
+            r: 0.1,
+            g: .5,
+            b: 1
+        };
+
+        gsap.to(hoverColor, {
+            r:initialColor.r,
+            g:initialColor.g,
+            b: initialColor.b,
+            onUpdate: () => {
+                //vertice 1
+                color.setX(intersects[0].face.a, hoverColor.r);
+                color.setY(intersects[0].face.a, hoverColor.g);
+                color.setZ(intersects[0].face.a, hoverColor.b);
+
+                //vertice 2
+                color.setX(intersects[0].face.b, hoverColor.r);
+                color.setY(intersects[0].face.b, hoverColor.g);
+                color.setZ(intersects[0].face.b, hoverColor.b);
+
+                //vertice 3
+                color.setX(intersects[0].face.c,hoverColor.r);
+                color.setY(intersects[0].face.c, hoverColor.g);
+                color.setZ(intersects[0].face.c, hoverColor.b);
+
+                color.needsUpdate = true;
+            }
+        });
     }
    
 };
